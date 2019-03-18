@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:特性="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+      http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+      http://www.springframework.org/schema/data/jpa
+      http://www.springframework.org/schema/data/jpa/spring-jpa.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+    <!-- 1.dataSource 配置数据库连接池-->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="com.mysql.jdbc.Driver" />
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/XXX?characterEncoding=utf-8" />
+        <property name="user" value="root" />
+        <property name="password" value="root" />
+    </bean>
+
+    <!-- 2.配置entityManagerFactory -->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!-- 指定实体类所在的包 -->
+        <property name="packagesToScan" value="com.test.pojo" />
+        <!-- 指定JPA的实现,默认就是hibernate -->
+        <property name="persistenceProvider">
+            <bean class="org.hibernate.jpa.HibernatePersistenceProvider" />
+        </property>
+        <!--JPA的供应商适配器-->
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <!-- 自动建表策略-> 是否自动建表 -->
+                <property name="generateDdl" value="true" />
+                <!-- 指定使用的数据库品牌 -->
+                <property name="database" value="MYSQL" />
+                <!-- 指定数据库方言类 -->
+                <property name="databasePlatform" value="org.hibernate.dialect.MySQLDialect" />
+                <!-- 是否输出sql语句 -->
+                <property name="showSql" value="true" />
+            </bean>
+        </property>
+        <!-- 可选,指定高级特性管理类,默认会根据jpaVendorAdapter自动选择 -->
+        <property name="jpaDialect">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
+        </property>
+    </bean>
+
+
+    <!-- 3.事务管理器-->
+    <!-- JPA事务管理器  -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+
+    <tx:annotation-driven></tx:annotation-driven>
+
+
+    <context:component-scan base-package="com.test"></context:component-scan>
+
+    <!-- 整合spring data jpa
+            base-package : 指定Dao接口所在的包
+        -->
+    <jpa:repositories base-package="com.test.dao"
+                      transaction-manager-ref="transactionManager"
+                      entity-manager-factory-ref="entityManagerFactory"></jpa:repositories>
+
+
+    <!--组装其它 配置文件-->
+
+</beans>
